@@ -205,9 +205,9 @@ fun main() {
                 println("Pedido confirmado: ")
                 for(itemPedido in pedido.itens){
                     println("Nome: ${itemPedido.item.nome}\n" +
-                            "Quantidade: ${itemPedido.qtd}\n" +
+                            "Quantidade: ${itemPedido.qtd}\n")
                 }
-                print("Status: ${pedido.status}\n" + "Total: R$${pedido.totalPedido}\n"))
+                print("Status: ${pedido.status}\n" + "Total: R$${pedido.totalPedido}\n")
 
 
 
