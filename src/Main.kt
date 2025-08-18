@@ -127,7 +127,14 @@ fun main() {
             5 -> {
 
             }
+            0 -> {
+                println("Saindo ...")
+                break
+            }
 
+            else -> {
+                println("Opção invalida! Tente novamente")
+            }
         }
     }
 }
