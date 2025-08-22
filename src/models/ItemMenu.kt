@@ -19,10 +19,10 @@ enum class StatusPedido {
 
 data class Pedido(
     val codigo: Int,
-    val itens: MutableList<ItemPedido>,
+    var itens: MutableList<ItemPedido>,
     var totalPedido: Double,
     var cupom: Boolean,
-    val status: StatusPedido
+    var status: StatusPedido
 )
 
 data class ItemPedido(

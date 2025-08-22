@@ -4,27 +4,38 @@ import models.Pedido
 import models.StatusPedido
 
 fun main() {
-    println("*** London Restaurant ***")
+
 
     val itensMenu = mutableListOf<ItemMenu>()
-    var proximoCodigoItem = 1
-    var proximoCodigoPedido = 1
+    val pedidos = mutableListOf<Pedido>()
+    var opcao = -1
 
-    while (true) {
+    var countItem = 1
+    var countPedido = 1
+
+    var optStatusPedido = -1
+
+    println("=========================")
+    println("=== London Restaurant ===")
+    println("=========================\n")
+
+    while (opcao != 0) {
         println("MENU PRINCIPAL")
         println("1. Cadastrar Item")
         println("2. Atualizar Item")
         println("3. Criar Pedido")
         println("4. Atualizar Pedido")
         println("5. Consultar Pedidos")
-        println("0. Sair")
+        println("0. Sair\n")
 
         print("Escolha uma opção: ")
-        val opcao = readln().toInt()
+        opcao = readln().toInt()
 
         when(opcao){
             1 -> {
-                println("Cadastrar Item")
+                println("\n=========================")
+                println("===== Cadastrar Item =====")
+                println("=========================\n")
                 print("Nome do item: ")
                 val nome = readln()
 
@@ -38,7 +49,7 @@ fun main() {
                 val estoque = readln().toInt()
 
                 val novoItem = ItemMenu(
-                    codigo = proximoCodigoItem,
+                    codigo = countItem,
                     nome =  nome,
                     descricao =  descricao,
                     preco = preco,
@@ -46,25 +57,28 @@ fun main() {
                 )
 
                 itensMenu.add(novoItem)
-                println("Item cadastrado!")
-                println()
-                proximoCodigoItem ++
+                countItem ++
+                println("Item cadastrado!\n\n")
             }
 
             2 -> {
-                println("Atualizar Item")
                 if(itensMenu.isEmpty()){
-                    println("Nenhum item cadastrado")
+                    println("Nenhum item cadastrado\n")
                     continue
                 }
 
+                println("\n=========================")
+                println("===== Atualizar Item =====")
+                println("=========================\n")
+
                 println("Itens disponíveis: ")
                 for(item in itensMenu){
-                    println("Código: ${item.codigo}\n" +
-                            "Nome: ${item.nome}\n" +
-                            "Descrição: ${item.descricao}\n" +
-                            "Preço: R$ ${item.preco}\n " +
-                            "Estoque: ${item.estoque}\n")
+                    println("Código: " + item.codigo)
+                    println("Nome: " + item.nome )
+                    println("Descrição: " + item.descricao )
+                    println("Preço: R$ " + item.preco)
+                    println("Estoque: " + item.estoque)
+                    println("----------------------\n")
                 }
                 print("Digite o código do item que deseja atualizar: ")
                 val codigoEscolhido = readln().toInt()
@@ -127,12 +141,13 @@ fun main() {
                 println("Criação de pedido")
 
                 val pedido = Pedido (
-                    codigo = proximoCodigoPedido,
+                    codigo = countPedido,
                     itens = mutableListOf(),
                     totalPedido = 0.00,
                     cupom = false,
                     status = StatusPedido.ACEITO
                 )
+                countPedido++
                 var adicionandoItens = true
 
                 //Adicionar Itens
@@ -207,14 +222,67 @@ fun main() {
                     println("Nome: ${itemPedido.item.nome}\n" +
                             "Quantidade: ${itemPedido.qtd}\n")
                 }
-                print("Status: ${pedido.status}\n" + "Total: R$${pedido.totalPedido}\n")
+                println("Status: ${pedido.status}\n" + "Total: R$${pedido.totalPedido}\n")
 
+                pedidos.add(pedido)
 
+                println(pedidos)
 
             }
 
             4 -> {
 
+                if (pedidos.size < 1) {
+                    println("Não existem pedidos cadastrados")
+                    continue
+                }
+
+                println("Edicao de Pedido")
+
+                println("Pedidos disponíveis: ")
+                println("========================")
+                for (pedido in pedidos){
+                    println("Código: "+ pedido.codigo)
+                    println("Status: "+ pedido.status)
+                    println("========================")
+                }
+
+                println("Informe o código do pedido que você quer alterar: ")
+
+                countPedido = readln().toInt()
+                if ( countItem > pedidos.size){
+                    println("Esse código não é válido colega")
+                    continue
+                }
+
+                println("Informe o status que vc quer dar ao pedido: \n ")
+                println("Possíveis status: ")
+                println("===================")
+                println("Status disponíveis: ")
+                println("1. ACEITO")
+                println("2. FAZENDO")
+                println("3. FEITO")
+                println("4. ESPERANDO_ENTREGADOR")
+                println("5. SAIU_PARA_ENTREGA")
+                println("6. ENTREGUE")
+                println("===================\n")
+
+                println("Informe o numero do status que você quer atribuir: ")
+                optStatusPedido = readln().toInt()
+
+                when (optStatusPedido){
+                     1 -> pedidos[countPedido+1].status = StatusPedido.ACEITO
+                     2 -> pedidos[countPedido+1].status = StatusPedido.FAZENDO
+                     3 -> pedidos[countPedido+1].status = StatusPedido.FEITO
+                     4 -> pedidos[countPedido+1].status = StatusPedido.ESPERANDO_ENTREGADOR
+                     5 -> pedidos[countPedido+1].status = StatusPedido.SAIU_PARA_ENTREGA
+                     6 -> pedidos[countPedido+1].status = StatusPedido.ENTREGUE
+                    else -> {
+                        println("Essa opção não é válida")
+                        continue
+                    }
+                }
+                println("Pedido $countPedido Editado!")
             }
 
             5 -> {
