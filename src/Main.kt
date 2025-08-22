@@ -8,7 +8,7 @@ fun main() {
 
     val itensMenu = mutableListOf<ItemMenu>()
     val pedidos = mutableListOf<Pedido>()
-    var opcao = -1
+    var running = true
 
     var countItem = 1
     var countPedido = 1
@@ -19,7 +19,7 @@ fun main() {
     println("=== London Restaurant ===")
     println("=========================\n")
 
-    while (opcao != 0) {
+    do {
         println("MENU PRINCIPAL")
         println("1. Cadastrar Item")
         println("2. Atualizar Item")
@@ -29,7 +29,7 @@ fun main() {
         println("0. Sair\n")
 
         print("Escolha uma opção: ")
-        opcao = readln().toInt()
+        var opcao = readln().toInt()
 
         when(opcao){
             1 -> {
@@ -148,10 +148,9 @@ fun main() {
                     status = StatusPedido.ACEITO
                 )
                 countPedido++
-                var adicionandoItens = true
 
-                //Adicionar Itens
-                while (adicionandoItens){
+                var adicionandoItens = true
+                do{
                     println("Itens disponíveis:\n")
                     for(item in itensMenu){
                         if(item.estoque >= 1){
@@ -188,7 +187,7 @@ fun main() {
                                             "Nome: ${itemPedido.item.nome}\n" +
                                             "Quantidade: ${itemPedido.qtd}\n")
                             }
-                            print("Valor Total da Compra: R$${pedido.totalPedido}\n")
+                            println("Valor Total da Compra: R$${pedido.totalPedido}")
                             break
                         }
                     }
@@ -198,11 +197,12 @@ fun main() {
                     }
 
                     print("Deseja adicionar mais itens (s/n)? ")
-                    val adicionarItem = readln()[0]
-                    if (adicionarItem == 'n') {
+                    val adicionarItem = readln()[0].lowercase()
+                    if (adicionarItem == "n") {
                         adicionandoItens = false
                     }
-                }
+                } while(adicionandoItens)
+
                 println("Pedido:\n")
                 for(itemPedido in pedido.itens){
                     println("Nome: ${itemPedido.item.nome}\n" +
@@ -211,8 +211,8 @@ fun main() {
                 println("Subtotal: R$${pedido.totalPedido}\n")
 
                 println("Deseja adicionar cupom de 15%?(s/n)")
-                val cupom = readln()[0]
-                if (cupom == 's'){
+                val cupom = readln()[0].lowercase()
+                if (cupom == "s"){
                     pedido.cupom = true
                     pedido.totalPedido = pedido.totalPedido - (pedido.totalPedido * 0.15)
                 }
@@ -227,7 +227,6 @@ fun main() {
                 pedidos.add(pedido)
 
                 println(pedidos)
-
             }
 
             4 -> {
@@ -289,13 +288,11 @@ fun main() {
 
             }
             0 -> {
-                println("Saindo ...")
-                break
+                running = false
             }
-
             else -> {
                 println("Opção invalida! Tente novamente")
             }
         }
-    }
+    } while(running)
 }
