@@ -72,7 +72,8 @@ fun atualizarItem(codigo: Int,
     val item = SystemControl.itensMenu.find { it.codigo == codigo }
     if (item == null){throw IllegalArgumentException("Item não encontrado")}
 
-    if ((estoque != null && estoque < 0) || (preco != null && preco< 0)){throw IllegalArgumentException("Item precisa ter nome, preço e estoque válidos")}
+    if ((estoque != null && estoque < 0) || (preco != null && preco< 0)){
+        throw IllegalArgumentException("Item precisa ter nome, preço e estoque válidos")}
 
     if (nome != null) {
         if (SystemControl.itensMenu.any { it.nome == nome }) {
@@ -134,3 +135,40 @@ fun adicionarItemPedido(codigo : Int,
 fun verificarItem(codigo: Int) : ItemMenu? {
     return SystemControl.itensMenu.find {it.codigo == codigo }
 }
+
+fun exibirItens(opcaoMenu : Int){
+    if(opcaoMenu == 2){
+        if (SystemControl.itensMenu.isEmpty()){
+            println("Não há itens cadastrados")
+        } else {
+            println("\nItens disponíveis no menu:")
+            println("┌─────────────────────────────────────────┐")
+
+            SystemControl.itensMenu.forEach { itemAtual ->
+                println("│ Código: ${itemAtual.codigo}")
+                println("│ Nome: ${itemAtual.nome}")
+                println("│ Descrição: ${itemAtual.descricao}")
+                println("│ Preço: R$ ${String.format("%.2f", itemAtual.preco)}")
+                println("│ Estoque: ${itemAtual.estoque} unidades")
+                println("├─────────────────────────────────────────┤")
+            }
+            println("└─────────────────────────────────────────┘")
+        }
+    } else if (opcaoMenu == 3){
+        val temItensDisponiveis = SystemControl.itensMenu.any { it.estoque >= 1 }
+        if (temItensDisponiveis){
+            println("\nItens disponíveis no menu:")
+            println("┌─────────────────────────────────────────┐")
+            SystemControl.itensMenu.filter{it.estoque >= 1}.forEach { itemMenu ->
+                    println("│ Código: ${itemMenu.codigo}")
+                    println("│ Nome: ${itemMenu.nome}")
+                    println("│ Descrição: ${itemMenu.descricao}")
+                    println("│ Preço: R$ ${String.format("%.2f", itemMenu.preco)}")
+                    println("│ Estoque disponível: ${itemMenu.estoque} unidades")
+                    println("├─────────────────────────────────────────┤")
+                }
+            println("└─────────────────────────────────────────┘")
+            } else {println("\nNenhum item disponível em estoque!") }
+    }
+}
+
