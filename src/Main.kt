@@ -47,23 +47,19 @@ fun main() {
             }
 
             2 -> {
-                if (SystemControl.itensMenu.isEmpty()) {
-                    println("\n Nenhum item cadastrado\n")
-                    continue
-                }
+                try {
+                    println("\n═══════════════════════════════════════")
+                    println("         ATUALIZAR ITEM DO MENU        ")
+                    println("═══════════════════════════════════════")
 
-                println("\n═══════════════════════════════════════")
-                println("         ATUALIZAR ITEM DO MENU        ")
-                println("═══════════════════════════════════════")
+                    SystemControl.itensMenu.forEach{exibirItens(it)}
 
-                exibirItens(2)
+                    println("\nDigite o código do item que deseja atualizar: ")
+                    val codigoItemEscolhido = readln().toInt()
 
 
-                println("\nDigite o código do item que deseja atualizar: ")
-                val codigoItemEscolhido = readln().toInt()
-
-                if(verificarItem(codigoItemEscolhido) != null) {
-                    println("Item encontrado: ${SystemControl.itensMenu[codigoItemEscolhido].nome}")
+                    val item = verificarItem(codigoItemEscolhido)
+                    println("Item encontrado: ${item.nome}")
 
                     println("\nO que deseja atualizar?")
                     println("┌─────────────────────────┐")
@@ -75,39 +71,31 @@ fun main() {
                     print("\nEscolha: ")
 
                     val campoParaAtualizar = readln().toInt()
+                    if (campoParaAtualizar in 1..4) {
+                        val opcoes = mapOf(
+                            1 to "nome",
+                            2 to "descricao",
+                            3 to "preco",
+                            4 to "estoque"
+                        )
 
-                    when (campoParaAtualizar) {
-                        1 -> {
-                            print("Novo nome: ")
-                            atualizarItem(codigoItemEscolhido, nome = readln())
+                        val campo = opcoes[campoParaAtualizar]
+                        if (campo != null) {
+                            print("Digite o $campo atualizado: ")
+                            atualizarItem(codigoItemEscolhido, campo, atualizacao = readln())
                         }
 
-                        2 -> {
-                            print("Nova descrição: ")
-                            atualizarItem(codigoItemEscolhido, descricao = readln())
-                        }
-
-                        3 -> {
-                            print("Novo preço: R$ ")
-                            atualizarItem(codigoItemEscolhido, preco = readln().toDouble())
-                        }
-
-                        4 -> {
-                            print("Nova quantidade em estoque: ")
-                            atualizarItem(codigoItemEscolhido, estoque = readln().toInt())
-                        }
-
-                        else -> {
-                            println("Opção inválida!")
-                            continue
-                        }
-                    }
-                        println("\n Item atualizado com sucesso!")
+                        println("\nItem atualizado com sucesso!")
                         println("─────────────────────────────────────────\n")
-                        break
-                } else {
-                    println("\n Item com código $codigoItemEscolhido não encontrado!")
-                    println("─────────────────────────────────────────\n") }
+                    } else {
+                        println("Opção inválida!")
+                    }
+
+                } catch (e: IllegalArgumentException) {
+                    println(e.message)
+                } catch (e: IllegalStateException){
+                println(e.message)
+                }
             }
 
             3 -> {
@@ -115,80 +103,88 @@ fun main() {
                 println("            CRIAR NOVO PEDIDO           ")
                 println("═══════════════════════════════════════")
 
-
                 var adicionandoItens = true
                 val listaItens = mutableListOf<ItemPedido>()
-                var cupom = false
                 var subtotal = 0.0
+                var cupom = false
+                try {
+                        do{
+                            SystemControl.itensMenu.filter{it.estoque >= 1 }.forEach{exibirItens(it)}
+                            print("Digite o código do item que você deseja adicionar: ")
+                            val codigoEscolhido = readln().toInt()
+                            val item = verificarItem(codigoEscolhido)
 
-                do{
-                    exibirItens(3)
+                            print("Digite a quantidade do item: ")
+                            val qtdItem = readln().toInt()
+                            adicionarItemPedido(item.codigo, qtdItem, listaItens)
 
-                    print("Digite o código do item que você deseja adicionar: ")
-                    val codigoEscolhido = readln().toInt()
 
-                    if (verificarItem(codigoEscolhido) != null){
-                        print("Digite a quantidade do item: ")
-                        val qtdItem = readln().toInt()
-                        adicionarItemPedido(codigoEscolhido, qtdItem, listaItens)
-                    }
+                            println("\nResumo do pedido atual:")
+                            println("┌─────────────────────────────────────────┐")
 
-                    println("\nResumo do pedido atual:")
-                    println("┌─────────────────────────────────────────┐")
+                            listaItens.forEach { itemPedido ->
+                                println("│ ${itemPedido.item.nome}")
+                                println("│ Quantidade: ${itemPedido.qtd}")
+                            }
 
-                    listaItens.forEach { itemPedido ->
-                        println("│ ${itemPedido.item.nome}")
-                        println("│ Quantidade: ${itemPedido.qtd}")
-                    }
+                            subtotal = listaItens.sumOf { it.qtd * it.item.preco }
+                            println("│ SUBTOTAL: R$ ${String.format("%.2f", subtotal)}")
+                            println("└─────────────────────────────────────────┘")
 
-                    subtotal = listaItens.sumOf { it.qtd * it.item.preco }
-                    println("│ SUBTOTAL: R$ ${String.format("%.2f", subtotal)}")
-                    println("└─────────────────────────────────────────┘")
+                            if (SystemControl.itensMenu.isNotEmpty()) {
+                                print("Deseja adicionar mais itens (s/n)? ")
+                                val adicionarItem = readln().firstOrNull()?.lowercase() ?: "n"
+                                if (adicionarItem == "n") {
+                                    adicionandoItens = false
+                                }
+                            } else {
+                                println("Não há mais itens disponíveis")
+                                adicionandoItens = false
+                            }
 
-                    if (!SystemControl.itensMenu.isEmpty()){
-                        print("Deseja adicionar mais itens (s/n)? ")
-                        val adicionarItem = readln()[0].lowercase()
-                        if (adicionarItem == "n") {
-                            adicionandoItens = false
-                        }
-                    }else {
-                        println("Não há mais itens disponíveis")
-                        adicionandoItens = false
-                    }
-                } while(adicionandoItens)
+                        } while(adicionandoItens)
 
-                println("\n═══════════════════════════════════════")
-                println("         FINALIZAÇÃO DO PEDIDO          ")
-                println("═══════════════════════════════════════")
-                println("\nResumo final do pedido:")
-                println("┌─────────────────────────────────────────┐")
+                            println("\n═══════════════════════════════════════")
+                            println("         FINALIZAÇÃO DO PEDIDO          ")
+                            println("═══════════════════════════════════════")
+                            println("\nResumo final do pedido:")
+                            println("┌─────────────────────────────────────────┐")
 
-                listaItens.forEach { itemPedido ->
-                    println("│ ${itemPedido.item.nome}")
-                    println("│ Quantidade: ${itemPedido.qtd}")
-                    println("│ Subtotal: R$ ${String.format("%.2f", itemPedido.qtd * itemPedido.item.preco)}")
-                    println("├─────────────────────────────────────────┤")
+                            listaItens.forEach { itemPedido ->
+                            println("│ ${itemPedido.item.nome}")
+                            println("│ Quantidade: ${itemPedido.qtd}")
+                            println("│ Subtotal: R$ ${String.format("%.2f", itemPedido.qtd * itemPedido.item.preco)}")
+                            println("├─────────────────────────────────────────┤")
+                            }
+
+                            println("│ SUBTOTAL: R$ ${String.format("%.2f", subtotal)}")
+                            println("└─────────────────────────────────────────┘")
+
+                            print("Deseja adicionar cupom de 15%?(s/n)")
+                            val resposta = readln().firstOrNull()?.lowercase() ?: "n"
+                            if (resposta == "s"){
+                                println("Cupom de 15% aplicado!")
+                                cupom = true
+                            }
+
+                            val novoPedido = cadastrarPedido(listaItens, subtotal, cupom)
+
+                            println("\n═══════════════════════════════════════")
+                            println("          PEDIDO CONFIRMADO             ")
+                            println("═══════════════════════════════════════")
+
+                            println("Código do Pedido: ${novoPedido.codigo}")
+                            println("Status: ${novoPedido.status}")
+                            println("TOTAL FINAL: R$ ${String.format("%.2f", novoPedido.totalPedido)}")
+                            println("─────────────────────────────────────────\n")
+                            break
+
+                } catch (e: IllegalArgumentException) {
+                    println(e.message)
+                } catch (e: IllegalStateException){
+                    println(e.message)
                 }
-                println("│ SUBTOTAL: R$ ${String.format("%.2f", subtotal)}")
-                println("└─────────────────────────────────────────┘")
 
-                print("Deseja adicionar cupom de 15%?(s/n)")
-                val resposta = readln()[0].lowercase()
-                if (resposta == "s"){
-                    println("Cupom de 15% aplicado!")
-                    cupom = true
-                }
-
-                val novoPedido = cadastrarPedido(listaItens, cupom, subtotal)
-
-                println("\n═══════════════════════════════════════")
-                println("          PEDIDO CONFIRMADO             ")
-                println("═══════════════════════════════════════")
-
-                println("Código do Pedido: ${novoPedido.codigo}")
-                println("Status: ${novoPedido.status}")
-                println("TOTAL FINAL: R$ ${String.format("%.2f", novoPedido.totalPedido)}")
-                println("─────────────────────────────────────────\n")
             }
 
             4 -> {

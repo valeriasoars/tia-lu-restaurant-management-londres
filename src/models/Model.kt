@@ -44,9 +44,9 @@ fun cadastrarItem(
     estoque: Int, ) : ItemMenu {
 
     if(SystemControl.itensMenu.any{item -> item.nome == nome}) {
-        throw IllegalArgumentException("Item já existe")
+        throw IllegalArgumentException("Error: Item já existe")
     } else if (nome == null || estoque < 0 || preco < 0){
-        throw IllegalArgumentException("Item precisa ter nome, preço e estoque válidos")
+        throw IllegalArgumentException("Error: Item precisa ter nome, preço e estoque válidos")
     }else {
             val novoItem = ItemMenu(
                 codigo = SystemControl.countItemMenu,
@@ -63,41 +63,49 @@ fun cadastrarItem(
         }
 }
 
-fun atualizarItem(codigo: Int,
-                  nome: String? = null,
-                  descricao: String? = null,
-                  preco: Double? = null,
-                  estoque: Int? = null) : ItemMenu {
+fun atualizarItem(
+    codigo: Int,
+    campo: String,
+    atualizacao: Any
+): ItemMenu {
 
-    val item = SystemControl.itensMenu.find { it.codigo == codigo }
-    if (item == null){throw IllegalArgumentException("Item não encontrado")}
+    val item = verificarItem(codigo)
+    val msgInvalido = "Item precisa ter nome, preço e estoque válidos"
 
-    if ((estoque != null && estoque < 0) || (preco != null && preco< 0)){
-        throw IllegalArgumentException("Item precisa ter nome, preço e estoque válidos")}
-
-    if (nome != null) {
-        if (SystemControl.itensMenu.any { it.nome == nome }) {
-            throw IllegalArgumentException("Já existe um item com este nome")
+    when (campo) {
+        "estoque" -> {
+            val novoEstoque = (atualizacao as Number).toInt()
+            if (novoEstoque < 0) throw IllegalArgumentException(msgInvalido)
+            item.estoque = novoEstoque
         }
-        item.nome = nome
+
+        "preco" -> {
+            val novoPreco = (atualizacao as Number).toDouble()
+            if (novoPreco < 0) throw IllegalArgumentException(msgInvalido)
+            item.preco = novoPreco
+        }
+
+        "nome" -> {
+            val novoNome = atualizacao.toString()
+            if (SystemControl.itensMenu.any { it.nome == novoNome }) {
+                throw IllegalArgumentException("Error: Já existe um item com este nome")
+            }
+            item.nome = novoNome
+        }
+        "descricao" -> {
+            item.descricao = atualizacao.toString()
+        }
     }
-    if (descricao != null) item.descricao = descricao
-    if (preco != null) item.preco = preco
-    if (estoque != null) item.estoque = estoque
 
     return item
 }
 
-
 fun cadastrarPedido(listaItens : MutableList<ItemPedido>,
-                    cupom : Boolean,
-                    subtotal : Double
+                    subtotal : Double,
+                    cupom : Boolean
                     ) : Pedido {
 
-    var totalPedido = subtotal
-    if (cupom == true){
-        totalPedido -= totalPedido * 0.15
-    }
+    var totalPedido = if (cupom) subtotal * 0.15 else subtotal
 
     val pedido = Pedido (
         codigo = SystemControl.countPedido,
@@ -117,10 +125,8 @@ fun adicionarItemPedido(codigo : Int,
                         listaItens: MutableList<ItemPedido>) : MutableList<ItemPedido>{
 
     var item = verificarItem(codigo)
-        if (item == null){throw IllegalArgumentException("Item não encontrado")}
-
     if (item.estoque <= 0 || quantidade > item.estoque) {
-        throw IllegalArgumentException("Item sem estoque")
+        throw IllegalArgumentException("Error: Item sem estoque")
     } else {
             val novoItem = ItemPedido(
                 item = item,
@@ -132,43 +138,29 @@ fun adicionarItemPedido(codigo : Int,
     return listaItens
 
 }
-fun verificarItem(codigo: Int) : ItemMenu? {
-    return SystemControl.itensMenu.find {it.codigo == codigo }
+fun verificarItem(codigo: Int) : ItemMenu {
+    val item = SystemControl.itensMenu.find {it.codigo == codigo }
+    if (item == null)
+        throw IllegalArgumentException("\n Error:Item com código $codigo não encontrado!\n\"─────────────────────────────────────────\\n\")")
+
+    return item
 }
 
-fun exibirItens(opcaoMenu : Int){
-    if(opcaoMenu == 2){
-        if (SystemControl.itensMenu.isEmpty()){
-            println("Não há itens cadastrados")
-        } else {
-            println("\nItens disponíveis no menu:")
-            println("┌─────────────────────────────────────────┐")
+fun exibirItens(item: ItemMenu){
+        if (SystemControl.itensMenu.isEmpty())throw IllegalStateException("Error:Não há itens cadastrados")
 
-            SystemControl.itensMenu.forEach { itemAtual ->
-                println("│ Código: ${itemAtual.codigo}")
-                println("│ Nome: ${itemAtual.nome}")
-                println("│ Descrição: ${itemAtual.descricao}")
-                println("│ Preço: R$ ${String.format("%.2f", itemAtual.preco)}")
-                println("│ Estoque: ${itemAtual.estoque} unidades")
-                println("├─────────────────────────────────────────┤")
-            }
-            println("└─────────────────────────────────────────┘")
+        println("\nItens disponíveis no menu:")
+        println("┌─────────────────────────────────────────┐")
+
+        SystemControl.itensMenu.forEach { itemAtual ->
+            println("│ Código: ${itemAtual.codigo}")
+            println("│ Nome: ${itemAtual.nome}")
+            println("│ Descrição: ${itemAtual.descricao}")
+            println("│ Preço: R$ ${String.format("%.2f", itemAtual.preco)}")
+            println("│ Estoque: ${itemAtual.estoque} unidades")
+            println("├─────────────────────────────────────────┤")
         }
-    } else if (opcaoMenu == 3){
-        val temItensDisponiveis = SystemControl.itensMenu.any { it.estoque >= 1 }
-        if (temItensDisponiveis){
-            println("\nItens disponíveis no menu:")
-            println("┌─────────────────────────────────────────┐")
-            SystemControl.itensMenu.filter{it.estoque >= 1}.forEach { itemMenu ->
-                    println("│ Código: ${itemMenu.codigo}")
-                    println("│ Nome: ${itemMenu.nome}")
-                    println("│ Descrição: ${itemMenu.descricao}")
-                    println("│ Preço: R$ ${String.format("%.2f", itemMenu.preco)}")
-                    println("│ Estoque disponível: ${itemMenu.estoque} unidades")
-                    println("├─────────────────────────────────────────┤")
-                }
-            println("└─────────────────────────────────────────┘")
-            } else {println("\nNenhum item disponível em estoque!") }
-    }
+
+        println("└─────────────────────────────────────────┘")
 }
 
