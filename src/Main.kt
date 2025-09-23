@@ -14,23 +14,28 @@ fun main() {
         when(opcaoMenuPrincipal){
             1 -> {
                 exibirCabecalho("CADASTRAR ITEM NO MENU")
+                var adicionarItem: String
+                do{
+                    try{
+                        print("\nNome do item: ")
+                        val nomeItem = readln()
+                        print("Descrição do item: ")
+                        val descricaoItem = readln()
+                        print("Preço do item (R$): ")
+                        val precoItem = readln().toDouble()
+                        print("Quantidade em estoque: ")
+                        val quantidadeEstoque = readln().toInt()
 
-                print("\nNome do item: ")
-                val nomeDoItem = readln()
+                        cadastrarItem(nomeItem, descricaoItem, precoItem, quantidadeEstoque)
+                        println("Item cadastrado com sucesso!")
+                    }catch (e: IllegalArgumentException){
+                        println("Erro ao cadastrar item: ${e.message}")
+                    }
 
-                print("Descrição do item: ")
-                val descricaoDoItem = readln()
-
-                print("Preço do item (R$): ")
-                val precoDoItem = readln().toDouble()
-
-                print("Quantidade em estoque: ")
-                val quantidadeEmEstoque = readln().toInt()
-
-                val novoItem = cadastrarItem(nomeDoItem, descricaoDoItem, precoDoItem, quantidadeEmEstoque)
-                println("Item '${novoItem}' cadastrado com sucesso!")
+                    println("Quer cadastrar mais item? (s/n)")
+                    adicionarItem = readln().lowercase()
+                }while(adicionarItem != "n")
             }
-
             2 -> {
                 try {
                     exibirCabecalho("ATUALIZAR ITEM DO MENU")
@@ -80,7 +85,6 @@ fun main() {
                 println(e.message)
                 }
             }
-
             3 -> {
                 exibirCabecalho("CRIAR NOVO PEDIDO")
 
@@ -167,7 +171,6 @@ fun main() {
                 }
 
             }
-
             4 -> {
                 if (SystemControl.pedidos.size < 1) {
                     println("Não existem pedidos cadastrados")
@@ -250,7 +253,6 @@ fun main() {
                 }
                 println("─────────────────────────────────────────\n")
             }
-
             5 -> {
                 if (SystemControl.pedidos.isEmpty()) {
                     println("\nNão existem pedidos cadastrados no sistema!\n")

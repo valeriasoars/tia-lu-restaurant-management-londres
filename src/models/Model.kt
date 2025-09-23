@@ -31,17 +31,13 @@ data class ItemPedido(
 )
 
 object SystemControl {
-    var countItemMenu = 0
-    var countPedido = 0
+    var countItemMenu = 1
+    var countPedido = 1
     val itensMenu = mutableListOf<ItemMenu>()
     val pedidos = mutableListOf<Pedido>()
 }
 
-fun cadastrarItem(
-    nome: String,
-    descricao: String,
-    preco: Double,
-    estoque: Int, ) : ItemMenu {
+fun cadastrarItem(nome: String, descricao: String, preco: Double, estoque: Int, ) : ItemMenu {
 
     if(SystemControl.itensMenu.any{item -> item.nome == nome}) {
         throw IllegalArgumentException("Error: Item já existe")
