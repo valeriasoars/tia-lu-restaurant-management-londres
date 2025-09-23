@@ -44,12 +44,12 @@ fun menuCadastrarItem(){
             val quantidadeEstoque = readln().toInt()
 
             cadastrarItem(nomeItem, descricaoItem, precoItem, quantidadeEstoque)
-            println("Item cadastrado com sucesso!")
+            println("\nItem cadastrado com sucesso!")
 
         }catch (e: IllegalArgumentException){
-            println("Erro ao cadastrar item: ${e.message}")
+            println("\nErro ao cadastrar item: ${e.message}")
         }
-        println("Quer cadastrar mais item? (s/n)")
+        println("\nQuer cadastrar mais itens? (s/n)")
         adicionandoItem = readln().lowercase()
 
     }while(adicionandoItem != "n")

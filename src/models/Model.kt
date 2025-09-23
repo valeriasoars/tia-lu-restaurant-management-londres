@@ -32,7 +32,7 @@ object SystemControl {
     var countPedido = 1
     val itensMenu = mutableListOf<ItemMenu>()
     val listaPedidos = mutableListOf<Pedido>()
-    val msgDadosInvalidos = "Item precisa ter nome, preço e estoque válidos"
+    val msgDadosInvalidos = "Error: Item precisa ter nome, preço e estoque válidos"
 }
 
 //Funções de Manipulação
