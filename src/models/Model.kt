@@ -160,3 +160,10 @@ fun exibirItens(item: ItemMenu){
         println("└─────────────────────────────────────────┘")
 }
 
+fun buscarPedidosPorStatus(status: StatusPedido): List<Pedido>{
+    return SystemControl.pedidos.filter { it.status == status }
+}
+
+fun atualizarStatusPedido(indicePedido: Int, novoStatus: StatusPedido){
+    SystemControl.pedidos[indicePedido].status = novoStatus
+}

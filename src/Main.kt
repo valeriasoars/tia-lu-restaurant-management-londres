@@ -9,7 +9,7 @@ fun main() {
     do {
         exibirMenu()
         print("\nEscolha uma opção: ")
-        var opcaoMenuPrincipal = readln().toInt()
+        opcaoMenuPrincipal = readln().toIntOrNull()
 
         when(opcaoMenuPrincipal){
             1 -> {
@@ -128,10 +128,8 @@ fun main() {
                             }
 
                         } while(adicionandoItens)
+                            exibirCabecalho("FINALIZAÇÃO DO PEDIDO")
 
-                            println("\n═══════════════════════════════════════")
-                            println("         FINALIZAÇÃO DO PEDIDO          ")
-                            println("═══════════════════════════════════════")
                             println("\nResumo final do pedido:")
                             println("┌─────────────────────────────────────────┐")
 
@@ -154,9 +152,7 @@ fun main() {
 
                             val novoPedido = cadastrarPedido(listaItens, subtotal, cupom)
 
-                            println("\n═══════════════════════════════════════")
-                            println("          PEDIDO CONFIRMADO             ")
-                            println("═══════════════════════════════════════")
+                            exibirCabecalho("PEDIDO CONFIRMADO ")
 
                             println("Código do Pedido: ${novoPedido.codigo}")
                             println("Status: ${novoPedido.status}")
@@ -180,17 +176,8 @@ fun main() {
                 exibirCabecalho("ATUALIZAR STATUS DO PEDIDO")
 
                 println("\nPedidos disponíveis:")
-                println("┌─────────────────────────────────────────┐")
+                exibirPedidos()
 
-                SystemControl.pedidos.forEach { pedidoAtual ->
-                println("│ Código: ${pedidoAtual.codigo}")
-                println("│ Status Atual: ${pedidoAtual.status}")
-                println("│ Total: R$ ${String.format("%.2f", pedidoAtual.totalPedido)}")
-                println("├─────────────────────────────────────────┤")
-                }
-                println("└─────────────────────────────────────────┘")
-
-                println("Informe o código do pedido que você quer alterar: ")
                 print("\nInforme o código do pedido que deseja alterar: ")
                 val codigoPedidoEscolhido = readln().toInt()
 
@@ -209,48 +196,26 @@ fun main() {
                 }
 
                 println("\nEscolha o novo status para o pedido:")
-                println("┌─────────────────────────────────────────┐")
-                println("│ 1. ACEITO                               │")
-                println("│ 2. FAZENDO                              │")
-                println("│ 3. FEITO                                │")
-                println("│ 4. ESPERANDO_ENTREGADOR                 │")
-                println("│ 5. SAIU_PARA_ENTREGA                    │")
-                println("│ 6. ENTREGUE                             │")
-                println("└─────────────────────────────────────────┘")
+                exibirMenuStatusPedidos()
 
                 print("\nInforme o número do status: ")
                 val opcaoStatusPedido = readln().toInt()
 
-                when (opcaoStatusPedido) {
-                    1 -> {
-                        SystemControl.pedidos[indicePedidoEncontrado].status = StatusPedido.ACEITO
-                        println("\nStatus alterado para: ACEITO")
-                    }
-                    2 -> {
-                        SystemControl.pedidos[indicePedidoEncontrado].status = StatusPedido.FAZENDO
-                        println("\nStatus alterado para: FAZENDO")
-                    }
-                    3 -> {
-                        SystemControl.pedidos[indicePedidoEncontrado].status = StatusPedido.FEITO
-                        println("\nStatus alterado para: FEITO")
-                    }
-                    4 -> {
-                        SystemControl.pedidos[indicePedidoEncontrado].status = StatusPedido.ESPERANDO_ENTREGADOR
-                        println("\nStatus alterado para: ESPERANDO_ENTREGADOR")
-                    }
-                    5 -> {
-                        SystemControl.pedidos[indicePedidoEncontrado].status = StatusPedido.SAIU_PARA_ENTREGA
-                        println("\nStatus alterado para: SAIU_PARA_ENTREGA")
-                    }
-                    6 -> {
-                        SystemControl.pedidos[indicePedidoEncontrado].status = StatusPedido.ENTREGUE
-                        println("\nStatus alterado para: ENTREGUE")
-                    }
+                val novoStatus = when (opcaoStatusPedido) {
+                    1 -> StatusPedido.ACEITO
+                    2 -> StatusPedido.FAZENDO
+                    3 -> StatusPedido.FEITO
+                    4 -> StatusPedido.ESPERANDO_ENTREGADOR
+                    5 -> StatusPedido.SAIU_PARA_ENTREGA
+                    6 -> StatusPedido.ENTREGUE
                     else -> {
                         println("\nOpção de status inválida!")
-                        continue
+                        return
                     }
                 }
+
+                atualizarStatusPedido(indicePedidoEncontrado, novoStatus)
+                println("\nStatus alterado para: $novoStatus")
                 println("─────────────────────────────────────────\n")
             }
             5 -> {
@@ -262,58 +227,31 @@ fun main() {
                 exibirCabecalho("CONSULTAR PEDIDOS POR STATUS")
 
                 println("\nFiltrar pedidos por status:")
-                println("┌─────────────────────────────────────────┐")
-                println("│ 1. ACEITO                               │")
-                println("│ 2. FAZENDO                              │")
-                println("│ 3. FEITO                                │")
-                println("│ 4. ESPERANDO_ENTREGADOR                 │")
-                println("│ 5. SAIU_PARA_ENTREGA                    │")
-                println("│ 6. ENTREGUE                             │")
-                println("└─────────────────────────────────────────┘")
+                exibirMenuStatusPedidos()
 
-                print("\nInforme o número do status: ")
-                val opcaoStatusPedido = readln().toInt()
+                try{
+                    print("\nInforme o número do status: ")
+                    val opcaoStatusPedido = readln().toInt()
 
-                val statusEscolhido = when (opcaoStatusPedido) {
-                    1 -> StatusPedido.ACEITO
-                    2 -> StatusPedido.FAZENDO
-                    3 -> StatusPedido.FEITO
-                    4 -> StatusPedido.ESPERANDO_ENTREGADOR
-                    5 -> StatusPedido.SAIU_PARA_ENTREGA
-                    6 -> StatusPedido.ENTREGUE
-                    else -> {
-                        println("\nOpção de status inválida!")
-                        continue
-                    }
-                }
-
-                println("\nPedidos com status: $statusEscolhido")
-                println("┌─────────────────────────────────────────┐")
-
-                var encontrouPedidosComStatus = false
-                for (pedidoAtual in SystemControl.pedidos) {
-                    if (pedidoAtual.status == statusEscolhido) {
-                        encontrouPedidosComStatus = true
-
-                        println("│ Código do Pedido: ${pedidoAtual.codigo}")
-                        println("│ Status: ${pedidoAtual.status}")
-                        println("│ Total: R$ ${String.format("%.2f", pedidoAtual.totalPedido)}")
-                        if (pedidoAtual.cupom) {
-                            println("│ Desconto aplicado: 15%")
+                    val statusEscolhido = when (opcaoStatusPedido) {
+                        1 -> StatusPedido.ACEITO
+                        2 -> StatusPedido.FAZENDO
+                        3 -> StatusPedido.FEITO
+                        4 -> StatusPedido.ESPERANDO_ENTREGADOR
+                        5 -> StatusPedido.SAIU_PARA_ENTREGA
+                        6 -> StatusPedido.ENTREGUE
+                        else -> {
+                            println("\nOpção de status inválida!")
+                            return
                         }
-                        println("│ Itens:")
-                        for (itemPedido in pedidoAtual.itens) {
-                            println("│   - ${itemPedido.item.nome} (Qtd: ${itemPedido.qtd})")
-                        }
-                        println("├─────────────────────────────────────────┤")
                     }
-                }
 
-                if (!encontrouPedidosComStatus) {
-                    println("│Nenhum pedido encontrado com esse status │")
-                }
+                    val pedidosFiltrados = buscarPedidosPorStatus(statusEscolhido)
+                    exibirPedidosPorStatus(pedidosFiltrados, statusEscolhido)
 
-                println("└─────────────────────────────────────────┘\n")
+                }catch (e: NumberFormatException) {
+                    println("Erro: Digite um número válido!")
+                }
             }
             0 -> {
                 exibirCabecalho("ENCERRANDO O SISTEMA ")
@@ -354,4 +292,52 @@ fun exibirCabecalho(titulo: String) {
     println("\n═══════════════════════════════════════")
     println("         $titulo       ")
     println("═══════════════════════════════════════")
+}
+
+fun exibirMenuStatusPedidos(){
+    println("┌─────────────────────────────────────────┐")
+    println("│ 1. ACEITO                               │")
+    println("│ 2. FAZENDO                              │")
+    println("│ 3. FEITO                                │")
+    println("│ 4. ESPERANDO_ENTREGADOR                 │")
+    println("│ 5. SAIU_PARA_ENTREGA                    │")
+    println("│ 6. ENTREGUE                             │")
+    println("└─────────────────────────────────────────┘")
+}
+
+fun exibirPedidosPorStatus(pedidos: List<Pedido>, status: StatusPedido){
+    println("\nPedidos com status: $status")
+    println("┌─────────────────────────────────────────┐")
+
+    if (pedidos.isEmpty()) {
+        println("│ Nenhum pedido encontrado com esse status │")
+    } else {
+        pedidos.forEach { pedido ->
+            println("│ Código do Pedido: ${pedido.codigo}")
+            println("│ Status: ${pedido.status}")
+            println("│ Total: R$ ${String.format("%.2f", pedido.totalPedido)}")
+            if (pedido.cupom) {
+                println("│ Desconto aplicado: 15%")
+            }
+            println("│ Itens:")
+            pedido.itens.forEach { itemPedido ->
+                println("│   - ${itemPedido.item.nome} (Qtd: ${itemPedido.qtd})")
+            }
+            println("├─────────────────────────────────────────┤")
+        }
+    }
+
+    println("└─────────────────────────────────────────┘\n")
+}
+
+fun exibirPedidos(){
+    println("┌─────────────────────────────────────────┐")
+
+    SystemControl.pedidos.forEach { pedidoAtual ->
+        println("│ Código: ${pedidoAtual.codigo}")
+        println("│ Status Atual: ${pedidoAtual.status}")
+        println("│ Total: R$ ${String.format("%.2f", pedidoAtual.totalPedido)}")
+        println("├─────────────────────────────────────────┤")
+    }
+    println("└─────────────────────────────────────────┘")
 }
