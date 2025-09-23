@@ -1,34 +1,19 @@
 import models.*
 
 fun main() {
-
-    var running = true
+    var opcaoMenuPrincipal: Int?
     var optStatusPedido = -1
 
-    println("=========================")
-    println("=== London Restaurant ===")
-    println("=========================\n")
+    exibirBoasVindas()
 
     do {
-        println("┌─────────────────────────────────────┐")
-        println("│            MENU PRINCIPAL           │")
-        println("├─────────────────────────────────────┤")
-        println("│ 1. Cadastrar Item                   │")
-        println("│ 2. Atualizar Item                   │")
-        println("│ 3. Criar Novo Pedido                │")
-        println("│ 4. Atualizar Pedido                 │")
-        println("│ 5. Consultar Pedidos                │")
-        println("│ 0. Sair do Sistema                  │")
-        println("└─────────────────────────────────────┘")
+        exibirMenu()
         print("\nEscolha uma opção: ")
         var opcaoMenuPrincipal = readln().toInt()
 
         when(opcaoMenuPrincipal){
             1 -> {
-
-                println("\n═══════════════════════════════════════")
-                println("         CADASTRAR ITEM NO MENU       ")
-                println("═══════════════════════════════════════")
+                exibirCabecalho("CADASTRAR ITEM NO MENU")
 
                 print("\nNome do item: ")
                 val nomeDoItem = readln()
@@ -48,9 +33,7 @@ fun main() {
 
             2 -> {
                 try {
-                    println("\n═══════════════════════════════════════")
-                    println("         ATUALIZAR ITEM DO MENU        ")
-                    println("═══════════════════════════════════════")
+                    exibirCabecalho("ATUALIZAR ITEM DO MENU")
 
                     SystemControl.itensMenu.forEach{exibirItens(it)}
 
@@ -99,9 +82,7 @@ fun main() {
             }
 
             3 -> {
-                println("\n═══════════════════════════════════════")
-                println("            CRIAR NOVO PEDIDO           ")
-                println("═══════════════════════════════════════")
+                exibirCabecalho("CRIAR NOVO PEDIDO")
 
                 var adicionandoItens = true
                 val listaItens = mutableListOf<ItemPedido>()
@@ -188,15 +169,12 @@ fun main() {
             }
 
             4 -> {
-
                 if (SystemControl.pedidos.size < 1) {
                     println("Não existem pedidos cadastrados")
                     continue
                 }
 
-                println("\n═══════════════════════════════════════")
-                println("       ATUALIZAR STATUS DO PEDIDO      ")
-                println("═══════════════════════════════════════")
+                exibirCabecalho("ATUALIZAR STATUS DO PEDIDO")
 
                 println("\nPedidos disponíveis:")
                 println("┌─────────────────────────────────────────┐")
@@ -279,9 +257,7 @@ fun main() {
                     continue
                 }
 
-                println("\n═══════════════════════════════════════")
-                println("       CONSULTAR PEDIDOS POR STATUS    ")
-                println("═══════════════════════════════════════")
+                exibirCabecalho("CONSULTAR PEDIDOS POR STATUS")
 
                 println("\nFiltrar pedidos por status:")
                 println("┌─────────────────────────────────────────┐")
@@ -338,17 +314,42 @@ fun main() {
                 println("└─────────────────────────────────────────┘\n")
             }
             0 -> {
-                println("\n═══════════════════════════════════════")
-                println("         ENCERRANDO O SISTEMA           ")
-                println("═══════════════════════════════════════")
+                exibirCabecalho("ENCERRANDO O SISTEMA ")
                 println("  Obrigado por usar o London Restaurant!")
                 println("───────────────────────────────────────\n")
-                running = false
             }
             else -> {
                 println("\n  Opção inválida! Tente novamente.")
                 println("─────────────────────────────────────────\n")
             }
         }
-    } while(running)
+    } while(opcaoMenuPrincipal != 0)
+}
+
+
+// Funções de interação
+
+fun exibirBoasVindas(){
+    println("═══════════════════════════════════════")
+    println("    BEM-VINDO AO LONDON RESTAURANT      ")
+    println("═══════════════════════════════════════\n")
+}
+
+fun exibirMenu(){
+    println("┌─────────────────────────────────────┐")
+    println("│            MENU PRINCIPAL           │")
+    println("├─────────────────────────────────────┤")
+    println("│ 1. Cadastrar Item                   │")
+    println("│ 2. Atualizar Item                   │")
+    println("│ 3. Criar Novo Pedido                │")
+    println("│ 4. Atualizar Pedido                 │")
+    println("│ 5. Consultar Pedidos                │")
+    println("│ 0. Sair do Sistema                  │")
+    println("└─────────────────────────────────────┘")
+}
+
+fun exibirCabecalho(titulo: String) {
+    println("\n═══════════════════════════════════════")
+    println("         $titulo       ")
+    println("═══════════════════════════════════════")
 }
