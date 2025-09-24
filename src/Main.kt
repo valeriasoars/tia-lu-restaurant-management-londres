@@ -88,7 +88,13 @@ fun menuAtualizarItem(){
             val campo = opcoes[campoParaAtualizar]
             if (campo != null) {
                 print("Digite o(a) $campo atualizado(a): ")
-                atualizarItem(codigoItemEscolhido, campo, atualizacao = readln())
+
+                val atualizacao: Any = when (campo) {
+                    "estoque" -> readln().toInt()
+                    "preco" -> readln().toDouble()
+                    else -> readln()
+                }
+                atualizarItem(codigoItemEscolhido, campo, atualizacao)
             }
 
             println("\nItem atualizado com sucesso!")
