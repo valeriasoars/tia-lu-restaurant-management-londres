@@ -27,6 +27,7 @@ fun main() {
         }
     } while(opcaoMenuPrincipal != 0)
 }
+
 //Funções do Menu
 fun menuCadastrarItem(){
     exibirCabecalho("CADASTRAR ITEM NO MENU")
@@ -50,7 +51,7 @@ fun menuCadastrarItem(){
             println("\nErro ao cadastrar item: ${e.message}")
         }
         println("\nQuer cadastrar mais itens? (s/n)")
-        adicionandoItem = readln().lowercase()
+        adicionandoItem = readln()[0].lowercase()
 
     }while(adicionandoItem != "n")
 }
@@ -106,6 +107,7 @@ fun menuAtualizarItem(){
 
     } catch (e: IllegalArgumentException) {
         println(e.message)
+        return
     } catch (e: IllegalStateException){
         println(e.message)
     }
