@@ -141,8 +141,8 @@ fun verificarPedido(codigo: Int) : Pedido {
     return pedido
 }
 fun atualizarStatusPedido(codigo: Int, novoStatus: StatusPedido){
-    val pedido = SystemControl.listaPedidos.find{it.codigo == codigo}
-    if (pedido != null) {pedido.status = novoStatus}
+    val pedido = verificarPedido(codigo)
+    pedido.status = novoStatus
 }
 
 
