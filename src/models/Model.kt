@@ -57,7 +57,7 @@ fun cadastrarItem(nome: String, descricao: String, preco: Double, estoque: Int, 
             return novoItem
         }
 }
-fun verificarItem(codigo: Int) : ItemMenu {
+fun buscarItem(codigo: Int) : ItemMenu {
     val item = SystemControl.itensMenu.find {it.codigo == codigo }
     if (item == null)
         throw IllegalArgumentException("Error:Item com código $codigo não encontrado!")
@@ -66,7 +66,7 @@ fun verificarItem(codigo: Int) : ItemMenu {
 }
 fun atualizarItem(codigo: Int, campo: String, atualizacao: Any): ItemMenu {
 
-    val item = verificarItem(codigo)
+    val item = buscarItem(codigo)
 
     when (campo) {
         "estoque" -> {
@@ -99,7 +99,7 @@ fun atualizarItem(codigo: Int, campo: String, atualizacao: Any): ItemMenu {
 }
 fun adicionarItemPedido(codigo : Int, quantidade : Int, listaItens: MutableList<ItemPedido>) : MutableList<ItemPedido> {
 
-    val item = verificarItem(codigo)
+    val item = buscarItem(codigo)
     if (item.estoque <= 0 || quantidade > item.estoque) {
         throw IllegalArgumentException("Error: Item sem estoque")
     } else {
@@ -129,9 +129,9 @@ fun cadastrarPedido(listaItens : MutableList<ItemPedido>, subtotal : Double, cup
     return pedido
 }
 fun rollbackCadastrarPedido(listaItens : MutableList<ItemPedido>) {
-
-    listaItens.map {  }
-
+    listaItens.map {
+        buscarItem(it.item.codigo).estoque += it.qtd
+    }
 }
 fun verificarPedido(codigo: Int) : Pedido {
     val pedido = SystemControl.listaPedidos.find {it.codigo == codigo }

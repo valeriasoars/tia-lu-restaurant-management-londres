@@ -46,9 +46,7 @@ fun menuCadastrarItem(){
 
         }catch (e: IllegalArgumentException){
             println("\nErro ao cadastrar item:")
-            println("┌──────────────────────────────────────────────┐")
-            println("| ⚠ ${e.message}")
-            println("└──────────────────────────────────────────────┘")
+            exibirErro(e.message)
         }
 
         continuarAdicionando = perguntarSeContinua("\nQuer cadastrar mais itens? (s/n): ")
@@ -73,7 +71,7 @@ fun menuAtualizarItem() {
             println("└─────────────────────────────────────────┘")
 
             val codigoItemEscolhido = lerInteiro("\nDigite o código do item que deseja atualizar: ")
-            val item = verificarItem(codigoItemEscolhido)
+            val item = buscarItem(codigoItemEscolhido)
             println("Item encontrado: ${item.nome}")
 
             exibirMenu("atualizarItem")
@@ -109,72 +107,73 @@ fun menuAtualizarItem() {
                 is IllegalStateException -> e.message
                 else -> "Ocorreu um erro inesperado: ${e.message}"
             }
-            println("┌──────────────────────────────────────────────┐")
-            println("| ⚠ ${mensagem}")
-            println("└──────────────────────────────────────────────┘")
+            exibirErro(mensagem)
         }
 
         continuarAtualizando = perguntarSeContinua("Deseja continuar atualizando itens? (s/n): ")
     } while (continuarAtualizando)
 }
-fun menuCadastrarPedido(){
+fun menuCadastrarPedido() {
     exibirCabecalho("CRIAR NOVO PEDIDO")
 
-    val listaItens = mutableListOf<ItemPedido>()
-    var continuarAdicionando: Boolean
-    var subtotal = 0.0
-    var cupom = false
+    val itensPedido = mutableListOf<ItemPedido>()
+    var continuar = true
 
     try {
-        do{
-            if (SystemControl.itensMenu.isEmpty()) {
-                println("Não há itens cadastrados\n")
+        while (continuar) {
+            val itensDisponiveis = SystemControl.itensMenu.filter { it.estoque > 0 }
+
+            if (itensDisponiveis.isEmpty()) {
+                exibirErro("Não há itens disponíveis no menu")
+                continuar = false
+                continue
+            }
+
+            println("\nItens disponíveis:")
+            itensDisponiveis.forEach { exibirItensMenu(it) }
+
+            val codigo = lerOuCancelar("Digite o código do item (ou 'c' para cancelar): ") ?: run {
+                cancelarPedido(itensPedido)
                 return
             }
 
-            SystemControl.itensMenu.filter{it.estoque >= 1 }.forEach{exibirItensMenu(it)}
+            val item = itensDisponiveis.find { it.codigo == codigo }
+            if (item == null) {
+                exibirErro("Esse código não é válido")
+                continue
+            }
 
-            val codigoEscolhido = lerInteiro("Digite o código do item que você deseja adicionar: ")
-            val item = verificarItem(codigoEscolhido)
-
-            val qtdItem = lerInteiro("Digite a quantidade do item: ")
-            adicionarItemPedido(item.codigo, qtdItem, listaItens)
-            subtotal = listaItens.sumOf { it.qtd * it.item.preco }
-
-            exibirResumoPedido(listaItens, subtotal)
-
-            if (SystemControl.itensMenu.isNotEmpty()) {
-                continuarAdicionando = perguntarSeContinua("Deseja adicionar mais itens? (s/n): ")
-
-            } else {
-                println("Não há mais itens disponíveis")
+            val qtd = lerOuCancelar("Digite a quantidade (ou 'c' para cancelar): ") ?: run {
+                cancelarPedido(itensPedido)
                 return
             }
 
-        } while(continuarAdicionando)
+            if (qtd > item.estoque) {
+                exibirErro("Não temos essa quantidade disponível")
+                continue
+            }
 
-        exibirCabecalho("FINALIZAÇÃO DO PEDIDO")
-        exibirResumoPedido(listaItens, subtotal)
+            adicionarItemPedido(item.codigo, qtd, itensPedido)
+            val subtotal = calcularSubtotal(itensPedido)
+            exibirResumoPedido(itensPedido, subtotal)
 
-        cupom = aplicarCupom()
+            continuar = perguntarSeContinua("Deseja adicionar mais itens? (s/n): ")
+        }
 
-        val novoPedido = cadastrarPedido(listaItens, subtotal, cupom)
+        if (itensPedido.isEmpty()) {
+            exibirErro("Seu pedido foi cancelado por falta de itens")
+            return
+        }
 
-        exibirCabecalho("PEDIDO CONFIRMADO ")
+        finalizarPedido(itensPedido)
 
-        println("Código do Pedido: ${novoPedido.codigo}")
-        println("Status: ${novoPedido.status}")
-        println("TOTAL FINAL: R$ ${String.format("%.2f", novoPedido.totalPedido)}")
-        println("─────────────────────────────────────────\n")
     } catch (e: Exception) {
         val mensagem = when (e) {
             is IllegalArgumentException,
             is IllegalStateException -> e.message
             else -> "Ocorreu um erro inesperado: ${e.message}"
         }
-        println("┌──────────────────────────────────────────────┐")
-        println("| ⚠ ${mensagem}")
-        println("└──────────────────────────────────────────────┘")
+        exibirErro(mensagem)
     }
 }
 fun menuAtualizarPedido(){
@@ -241,16 +240,17 @@ fun menuBuscarPedidoPorStatus(){
             5 -> StatusPedido.SAIU_PARA_ENTREGA
             6 -> StatusPedido.ENTREGUE
             else -> {
-                println("\nOpção de status inválida!")
+                exibirErro("Opção de status inválida!")
                 return
             }
         }
         exibirPedidosPorStatus(statusEscolhido)
 
     }catch (e: NumberFormatException) {
-        println("Error: Digite um número válido!")
+        exibirErro("Digite um número válido!")
     }
 }
+
 
 //Funções de Interação/Exibição
 fun exibirBoasVindas(){
@@ -352,6 +352,12 @@ fun exibirResumoPedido(listaItens : MutableList<ItemPedido>, subtotal : Double){
     println("│ SUBTOTAL DO PEDIDO: R$ ${String.format("%.2f", subtotal)}")
     println("└─────────────────────────────────────────┘")
 }
+fun exibirErro(mensagem: String?) {
+    println("┌──────────────────────────────────────────────┐")
+    println("| ⚠ ${mensagem ?: "Erro desconhecido"}")
+    println("└──────────────────────────────────────────────┘")
+}
+
 
 //Funções auxiliares para leitura segura
 fun lerInteiro(mensagem: String = ""): Int {
@@ -389,6 +395,15 @@ fun lerTexto(mensagem: String = ""): String {
     } while (texto.isBlank())
     return texto
 }
+fun lerOuCancelar(mensagem: String): Int? {
+    print(mensagem)
+    val entrada = readln().lowercase()
+    if (entrada == "c") return null
+    return entrada.toIntOrNull() ?: run {
+        exibirErro("Entrada inválida!")
+        lerOuCancelar(mensagem)
+    }
+}
 fun perguntarSeContinua(mensagem: String = "Deseja continuar? (s/n): "): Boolean {
     var resposta: String
     do {
@@ -402,6 +417,9 @@ fun perguntarSeContinua(mensagem: String = "Deseja continuar? (s/n): "): Boolean
     } while (resposta !in listOf("s", "n"))
     return resposta == "s"
 }
+
+
+// Utilitárias
 fun aplicarCupom() : Boolean{
     print("Deseja adicionar cupom de 15%?(s/n) ")
     val resposta = readln().firstOrNull()?.lowercase() ?: "n"
@@ -410,4 +428,31 @@ fun aplicarCupom() : Boolean{
         return true
     }
     return false
+}
+fun calcularSubtotal(itens: List<ItemPedido>): Double {
+    return itens.sumOf { it.qtd * it.item.preco }
+}
+fun cancelarPedido(listaItens: MutableList<ItemPedido>) {
+    exibirErro("Pedido cancelado! Nenhum item foi salvo.")
+    rollbackCadastrarPedido(listaItens)
+    listaItens.clear()
+}
+fun finalizarPedido(listaItens: MutableList<ItemPedido>) {
+    val subtotal = calcularSubtotal(listaItens)
+    exibirCabecalho("FINALIZAÇÃO DO PEDIDO")
+    exibirResumoPedido(listaItens, subtotal)
+
+    if(!perguntarSeContinua("Deseja confirmar esse pedido? (s/n): ")){
+        cancelarPedido(listaItens)
+        return
+    }
+
+    val cupom = aplicarCupom()
+    val novoPedido = cadastrarPedido(listaItens, subtotal, cupom)
+
+    exibirCabecalho("PEDIDO CONFIRMADO")
+    println("Código do Pedido: ${novoPedido.codigo}")
+    println("Status: ${novoPedido.status}")
+    println("TOTAL FINAL: R$ ${String.format("%.2f", novoPedido.totalPedido)}")
+    println("─────────────────────────────────────────\n")
 }
