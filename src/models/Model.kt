@@ -39,7 +39,7 @@ object SystemControl {
 fun cadastrarItem(nome: String, descricao: String, preco: Double, estoque: Int, ) : ItemMenu {
 
     if(SystemControl.itensMenu.any{item -> item.nome == nome}) {
-        throw IllegalArgumentException("Error: Item já existe")
+        throw IllegalArgumentException("Error: Um item com esse nome já existe")
     } else if (nome.isBlank()|| estoque < 0 || preco < 0){
         throw IllegalArgumentException(SystemControl.msgDadosInvalidos)
     }else {
@@ -60,7 +60,7 @@ fun cadastrarItem(nome: String, descricao: String, preco: Double, estoque: Int, 
 fun verificarItem(codigo: Int) : ItemMenu {
     val item = SystemControl.itensMenu.find {it.codigo == codigo }
     if (item == null)
-        throw IllegalArgumentException("\n Error:Item com código $codigo não encontrado!\n\"─────────────────────────────────────────\\n\")")
+        throw IllegalArgumentException("Error:Item com código $codigo não encontrado!")
 
     return item
 }
@@ -128,10 +128,15 @@ fun cadastrarPedido(listaItens : MutableList<ItemPedido>, subtotal : Double, cup
 
     return pedido
 }
+fun rollbackCadastrarPedido(listaItens : MutableList<ItemPedido>) {
+
+    listaItens.map {  }
+
+}
 fun verificarPedido(codigo: Int) : Pedido {
     val pedido = SystemControl.listaPedidos.find {it.codigo == codigo }
     if (pedido == null)
-        throw IllegalArgumentException("\n Error: Pedido com código $codigo não encontrado!\n\"─────────────────────────────────────────\\n\")")
+        throw IllegalArgumentException("Error: Pedido com código $codigo não encontrado!")
 
     return pedido
 }

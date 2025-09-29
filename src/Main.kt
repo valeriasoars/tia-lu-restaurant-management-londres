@@ -7,7 +7,7 @@ fun main() {
 
     do {
         exibirMenu("principal")
-        opcaoMenuPrincipal = readln().toIntOrNull()
+        opcaoMenuPrincipal = lerInteiro()
 
         when(opcaoMenuPrincipal){
             1 -> {menuCadastrarItem()}
@@ -28,57 +28,58 @@ fun main() {
     } while(opcaoMenuPrincipal != 0)
 }
 
+
 //Funções do Menu
 fun menuCadastrarItem(){
     exibirCabecalho("CADASTRAR ITEM NO MENU")
-    var adicionandoItem: String
+    var continuarAdicionando: Boolean
 
     do{
         try{
-            print("\nNome do item: ")
-            val nomeItem = readln()
-            print("Descrição do item: ")
-            val descricaoItem = readln()
-            print("Preço do item (R$): ")
-            val precoItem = readln().toDouble()
-            print("Quantidade em estoque: ")
-            val quantidadeEstoque = readln().toInt()
+            val nomeItem = lerTexto("\nNome do item: ")
+            val descricaoItem = lerTexto("Descrição do item: ")
+            val precoItem = lerDouble("Preço do item (R\$): ")
+            val quantidadeEstoque = lerInteiro("Quantidade em estoque: ")
 
             cadastrarItem(nomeItem, descricaoItem, precoItem, quantidadeEstoque)
             println("\nItem cadastrado com sucesso!")
 
         }catch (e: IllegalArgumentException){
-            println("\nErro ao cadastrar item: ${e.message}")
+            println("\nErro ao cadastrar item:")
+            println("┌──────────────────────────────────────────────┐")
+            println("| ⚠ ${e.message}")
+            println("└──────────────────────────────────────────────┘")
         }
-        println("\nQuer cadastrar mais itens? (s/n)")
-        adicionandoItem = readln()[0].lowercase()
 
-    }while(adicionandoItem != "n")
+        continuarAdicionando = perguntarSeContinua("\nQuer cadastrar mais itens? (s/n): ")
+
+    }while(continuarAdicionando)
 }
-fun menuAtualizarItem(){
-    try {
-        exibirCabecalho("ATUALIZAR ITEM DO MENU")
+fun menuAtualizarItem() {
+    exibirCabecalho("ATUALIZAR ITEM DO MENU")
 
-        if (SystemControl.itensMenu.isEmpty()) {
-            println("Não há itens cadastrados\n")
-            return
-        }
+    if (SystemControl.itensMenu.isEmpty()) {
+        println("Não há itens cadastrados\n")
+        return
+    }
 
-        println("\nItens disponíveis no menu:")
-        println("┌─────────────────────────────────────────┐")
-        SystemControl.itensMenu.forEach{exibirItensMenu(it)}
-        println("└─────────────────────────────────────────┘")
+    var continuarAtualizando = true
 
-        println("\nDigite o código do item que deseja atualizar: ")
-        val codigoItemEscolhido = readln().toInt()
+    do {
+        try {
+            println("\nItens disponíveis no menu:")
+            println("┌─────────────────────────────────────────┐")
+            SystemControl.itensMenu.forEach { exibirItensMenu(it) }
+            println("└─────────────────────────────────────────┘")
 
-        val item = verificarItem(codigoItemEscolhido)
-        println("Item encontrado: ${item.nome}")
+            val codigoItemEscolhido = lerInteiro("\nDigite o código do item que deseja atualizar: ")
+            val item = verificarItem(codigoItemEscolhido)
+            println("Item encontrado: ${item.nome}")
 
-        exibirMenu("atualizarItem")
-        val campoParaAtualizar = readln().toInt()
+            exibirMenu("atualizarItem")
 
-        if (campoParaAtualizar in 1..4) {
+            val campoParaAtualizar = lerInteiro("Digite o número do campo que deseja atualizar: ")
+
             val opcoes = mapOf(
                 1 to "nome",
                 2 to "descricao",
@@ -87,36 +88,40 @@ fun menuAtualizarItem(){
             )
 
             val campo = opcoes[campoParaAtualizar]
-            if (campo != null) {
-                print("Digite o(a) $campo atualizado(a): ")
-
-                val atualizacao: Any = when (campo) {
-                    "estoque" -> readln().toInt()
-                    "preco" -> readln().toDouble()
-                    else -> readln()
-                }
-                atualizarItem(codigoItemEscolhido, campo, atualizacao)
+            if (campo == null) {
+                println("Opção inválida! Tente novamente.")
+                continue
             }
 
+            val atualizacao: Any = when (campo) {
+                "estoque" -> lerInteiro("Digite o novo valor para estoque: ")
+                "preco" -> lerDouble("Digite o novo valor para preço: ")
+                else -> lerTexto("Digite o novo(a) $campo: ")
+            }
+
+            atualizarItem(codigoItemEscolhido, campo, atualizacao)
             println("\nItem atualizado com sucesso!")
             println("─────────────────────────────────────────\n")
 
-        } else {
-            println("Opção inválida!")
+        } catch (e: Exception) {
+            val mensagem = when (e) {
+                is IllegalArgumentException,
+                is IllegalStateException -> e.message
+                else -> "Ocorreu um erro inesperado: ${e.message}"
+            }
+            println("┌──────────────────────────────────────────────┐")
+            println("| ⚠ ${mensagem}")
+            println("└──────────────────────────────────────────────┘")
         }
 
-    } catch (e: IllegalArgumentException) {
-        println(e.message)
-        return
-    } catch (e: IllegalStateException){
-        println(e.message)
-    }
+        continuarAtualizando = perguntarSeContinua("Deseja continuar atualizando itens? (s/n): ")
+    } while (continuarAtualizando)
 }
 fun menuCadastrarPedido(){
     exibirCabecalho("CRIAR NOVO PEDIDO")
 
     val listaItens = mutableListOf<ItemPedido>()
-    var adicionandoItem: String = "s"
+    var continuarAdicionando: Boolean
     var subtotal = 0.0
     var cupom = false
 
@@ -129,29 +134,24 @@ fun menuCadastrarPedido(){
 
             SystemControl.itensMenu.filter{it.estoque >= 1 }.forEach{exibirItensMenu(it)}
 
-            print("Digite o código do item que você deseja adicionar: ")
-            val codigoEscolhido = readln().toInt()
-
+            val codigoEscolhido = lerInteiro("Digite o código do item que você deseja adicionar: ")
             val item = verificarItem(codigoEscolhido)
 
-            print("Digite a quantidade do item: ")
-            val qtdItem = readln().toInt()
-
+            val qtdItem = lerInteiro("Digite a quantidade do item: ")
             adicionarItemPedido(item.codigo, qtdItem, listaItens)
             subtotal = listaItens.sumOf { it.qtd * it.item.preco }
 
             exibirResumoPedido(listaItens, subtotal)
 
             if (SystemControl.itensMenu.isNotEmpty()) {
-                print("Deseja adicionar mais itens (s/n)? ")
-                adicionandoItem = readln().firstOrNull()?.lowercase() ?: "n"
+                continuarAdicionando = perguntarSeContinua("Deseja adicionar mais itens? (s/n): ")
 
             } else {
                 println("Não há mais itens disponíveis")
-                adicionandoItem = "n"
+                return
             }
 
-        } while(adicionandoItem != "n")
+        } while(continuarAdicionando)
 
         exibirCabecalho("FINALIZAÇÃO DO PEDIDO")
         exibirResumoPedido(listaItens, subtotal)
@@ -166,10 +166,15 @@ fun menuCadastrarPedido(){
         println("Status: ${novoPedido.status}")
         println("TOTAL FINAL: R$ ${String.format("%.2f", novoPedido.totalPedido)}")
         println("─────────────────────────────────────────\n")
-    } catch (e: IllegalArgumentException) {
-        println(e.message)
-    } catch (e: IllegalStateException){
-        println(e.message)
+    } catch (e: Exception) {
+        val mensagem = when (e) {
+            is IllegalArgumentException,
+            is IllegalStateException -> e.message
+            else -> "Ocorreu um erro inesperado: ${e.message}"
+        }
+        println("┌──────────────────────────────────────────────┐")
+        println("| ⚠ ${mensagem}")
+        println("└──────────────────────────────────────────────┘")
     }
 }
 fun menuAtualizarPedido(){
@@ -335,17 +340,6 @@ fun exibirPedidosPorStatus(status: StatusPedido) {
 
     println("└─────────────────────────────────────────┘\n")
 }
-
-//Funções Auxiliares
-fun aplicarCupom() : Boolean{
-    print("Deseja adicionar cupom de 15%?(s/n) ")
-    val resposta = readln().firstOrNull()?.lowercase() ?: "n"
-    if (resposta == "s"){
-        println("Cupom de 15% aplicado!")
-        return true
-    }
-    return false
-}
 fun exibirResumoPedido(listaItens : MutableList<ItemPedido>, subtotal : Double){
     println("\nResumo do pedido:")
     println("┌─────────────────────────────────────────┐")
@@ -359,3 +353,61 @@ fun exibirResumoPedido(listaItens : MutableList<ItemPedido>, subtotal : Double){
     println("└─────────────────────────────────────────┘")
 }
 
+//Funções auxiliares para leitura segura
+fun lerInteiro(mensagem: String = ""): Int {
+    var valor: Int? = null
+    do {
+        print(mensagem)
+        val entrada = readln()
+        valor = entrada.toIntOrNull()
+        if (valor == null) {
+            println("Entrada inválida! Digite um número inteiro.")
+        }
+    } while (valor == null)
+    return valor
+}
+fun lerDouble(mensagem: String = ""): Double {
+    var valor: Double? = null
+    do {
+        print(mensagem)
+        val entrada = readln()
+        valor = entrada.toDoubleOrNull()
+        if (valor == null) {
+            println("Entrada inválida! Digite um número decimal (ex: 12.50).")
+        }
+    } while (valor == null)
+    return valor
+}
+fun lerTexto(mensagem: String = ""): String {
+    var texto: String
+    do {
+        print(mensagem)
+        texto = readln()
+        if (texto.isBlank()) {
+            println("Vazio? Entrada inválida colega!")
+        }
+    } while (texto.isBlank())
+    return texto
+}
+fun perguntarSeContinua(mensagem: String = "Deseja continuar? (s/n): "): Boolean {
+    var resposta: String
+    do {
+        print(mensagem)
+        resposta = readln().lowercase()
+        if (resposta !in listOf("s", "n")) {
+            println("┌──────────────────────────────────────────────┐")
+            println("| ⚠ Opção inválida! Digite apenas 's' ou 'n' ⚠ |")
+            println("└──────────────────────────────────────────────┘")
+        }
+    } while (resposta !in listOf("s", "n"))
+    return resposta == "s"
+}
+fun aplicarCupom() : Boolean{
+    print("Deseja adicionar cupom de 15%?(s/n) ")
+    val resposta = readln().firstOrNull()?.lowercase() ?: "n"
+    if (resposta == "s"){
+        println("Cupom de 15% aplicado!")
+        return true
+    }
+    return false
+}
